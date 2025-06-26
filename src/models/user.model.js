@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import validator from 'validator';
 
 const userSchema = new mongoose.Schema({
     firstName : {
@@ -16,6 +17,11 @@ const userSchema = new mongoose.Schema({
         unique : true,
         trim : true,
         lowercase : true,
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error("Email is not valid");
+            }
+        }
     },
     password : {
         type : String,
@@ -36,6 +42,11 @@ const userSchema = new mongoose.Schema({
     photoUrl : {
         type : String,
         default : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2TgOv9CMmsUzYKCcLGWPvqcpUk6HXp2mnww&s",
+        validate(value) {
+            if (!validator.isURL(value)) {
+                throw new Error("Photo URL is not valid");
+            }
+        }
 
     },
     about : {

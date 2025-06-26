@@ -63,9 +63,18 @@ app.delete("/user", async (req, res) => {
 })
 
 // update the user 
-app.patch("/user", async(req, res)=>{
+app.patch("/user/:userId", async(req, res)=>{
+
+    const { userId } = req.params
+    console.log("User ID to update: ", userId);
     try {
-        const user = await User.findOneAndUpdate({ emailId: req.body.emailId }, req.body);
+
+        const ALLOWED_UPDATES = ["userId",  "photoUrl", "about", "lastName"]
+        const isUpdateAllowed = Object.keys(req.body).every((update) => ALLOWED_UPDATES.includes(update));
+        if (!isUpdateAllowed) {
+            throw new Error("Invalid update fields");
+        }
+        const user = await User.findOneAndUpdate({ _id: userId }, req.body);
         if (!user) {
             return res.status(404).send("User not found");
         }
