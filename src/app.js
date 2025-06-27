@@ -4,6 +4,9 @@ import connectDB from "./config/database.js";
 import User from "./models/user.model.js";
 import { validateSignInData, validateSignUpData } from "./utils/validation.js";
 import bcrypt from "bcryptjs"
+import cookieParser from "cookie-parser"
+import jwt from "jsonwebtoken";
+import { userAuth } from "./middleware/auth.middleware.js";
 
 dotenv.config()
 const app = express();
@@ -13,6 +16,7 @@ const port = process.env.PORT || 3000;
 // middleware
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
 
 
 // user signup
@@ -58,6 +62,16 @@ app.post("/login", async (req, res) => {
             throw new Error("Invalid password");
         }
 
+        //create a jwt token
+        const token = jwt.sign({ _id: user._id },
+                                process.env.JWT_SECRET, 
+                                { expiresIn:process.env.JWT_EXPIRY || '1h' });
+
+        // add the token to cookies and send the responce back to user
+        res.cookie("token", token, {
+            httpOnly: true
+        })
+
         return res.send("Login Successful");
         
     } catch (error) {
@@ -65,6 +79,19 @@ app.post("/login", async (req, res) => {
     }
 })
 
+// user profile
+app.get("/profile", userAuth, async (req, res) => {
+    try {
+        // get the user
+        const user = req.user
+        
+        // send the user data back to the client
+        res.status(200).send(user)
+
+    } catch (error) {
+        res.status(400).send("Error while fetching profile: " + error.message);
+    }
+})
 
 // get user by email
 app.get("/user" , async (req, res) => {
