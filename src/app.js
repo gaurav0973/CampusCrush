@@ -57,15 +57,13 @@ app.post("/login", async (req, res) => {
         }
 
         // compare the password
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = user.validatePassword(password)
         if(!isPasswordValid){
             throw new Error("Invalid password");
         }
 
         //create a jwt token
-        const token = jwt.sign({ _id: user._id },
-                                process.env.JWT_SECRET, 
-                                { expiresIn:process.env.JWT_EXPIRY || '1h' });
+        const token = user.getJWT()
 
         // add the token to cookies and send the responce back to user
         res.cookie("token", token, {
