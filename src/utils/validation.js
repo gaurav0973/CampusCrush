@@ -25,3 +25,12 @@ export const validateSignInData = (req) => {
         throw new Error("Password must be strong");
     }
 }
+
+export const validateProfileData = (req) => {
+    const allowedEditFields = ['firstName', 'lastName', 'emailId', 'photoUrl', 'gender', 'age', 'about', 'skills'];
+    const isEditAllowed = Object.keys(req.body).every((field) => allowedEditFields.includes(field));
+    if (!isEditAllowed) {
+        throw new Error("Invalid edit fields");
+    }
+    return isEditAllowed
+}
