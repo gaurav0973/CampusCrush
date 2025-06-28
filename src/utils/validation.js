@@ -14,11 +14,11 @@ export const validateSignUpData = (req) => {
 }
 
 export const validateSignInData = (req) => {
-    const {email, password} = req.body;
-    if(!email || !password){
+    const {emailId, password} = req.body;
+    if(!emailId || !password){
         throw new Error("Email and password are required");
     }
-    else if(!validator.isEmail(email)){
+    else if(!validator.isEmail(emailId)){
         throw new Error("Email is not valid");
     }
     else if(!validator.isStrongPassword(password)){
