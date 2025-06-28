@@ -2,6 +2,10 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/database.js";
 import cookieParser from "cookie-parser"
+import authRouter from "./routes/auth.routes.js";
+import profileRouter from "./routes/profile.routes.js";
+import requestRouter from "./routes/request.routes.js";
+import userRouter from "./routes/user.router.js";
 
 dotenv.config()
 const app = express();
@@ -14,7 +18,11 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
 
-
+// routes
+app.use("/", authRouter)
+app.use("/", profileRouter)
+app.use("/", requestRouter)
+app.use("/", userRouter)
 
 
 

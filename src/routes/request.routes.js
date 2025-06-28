@@ -1,7 +1,7 @@
 import express from 'express';
-import { userAuth } from '../middleware/auth.middleware';
-import ConnectionRequest from '../models/connectionRequest.model';
-import User from '../models/user.model';
+import { userAuth } from '../middleware/auth.middleware.js';
+import ConnectionRequest from '../models/connectionRequest.model.js';
+import User from '../models/user.model.js';
 
 
 const requestRouter = express.Router();
@@ -57,10 +57,45 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res)
     }
 })  
 
+requestRouter.post("/request/send/:status/:requestId", userAuth, async (req, res) => {
 
+    const loggedInUser = req.user
+    const {status, requestId} = req.params;
+    try {
+        // validate the status
+        const allowedStatus = ["accepted", "rejected"]
+        if (!allowedStatus.includes(status)) {
+            return res.status(400).json({
+                message: "Invalid status. Allowed values are: " + allowedStatus.join(", ")
+            })
+        }
+        // requestId = shoould be valid
+        const connectionRequest = await ConnectionRequest.findOne({
+            _id : requestId,
+            toUserId: loggedInUser._id,
+            status : "interested"
+        })
+        if(!connectionRequest) {
+            return res.status(404).json({
+                message: "Connection request not found or already processed"
+            })
+        }
 
+        connectionRequest.status = status;
+        await connectionRequest.save();
 
-
-
+        return res.status(200).json({
+            message: `Connection request ${status} successfully`,
+            data: connectionRequest
+        })
+        
+        
+    } catch (error) {
+        return res.status(500).json({
+            message: "Error processing request",
+            error: error.message
+        })
+    }
+})
 
 export default requestRouter;

@@ -1,6 +1,7 @@
-import express from 'express';
-import { validateSignInData, validateSignUpData } from '../utils/validation.js';
-import User from '../models/user.model.js';
+import express from 'express'
+import { validateSignInData, validateSignUpData } from '../utils/validation.js'
+import User from '../models/user.model.js'
+import  bcrypt from 'bcryptjs'
 
 const authRouter = express.Router();
 
@@ -38,13 +39,17 @@ authRouter.post("/login", async (req, res) => {
         // find the user by email
         const user = await User.findOne({emailId : emailId})
         if(!user) {
-            throw new Error("User not found");
+            res.status(400).json({
+                message: "User not found"
+            })
         }
 
         // compare the password
         const isPasswordValid = user.validatePassword(password)
         if(!isPasswordValid){
-            throw new Error("Invalid password");
+            res.status(400).json({
+                message: "Invalid password"
+            })
         }
 
         //create a jwt token
@@ -58,7 +63,9 @@ authRouter.post("/login", async (req, res) => {
         return res.send("Login Successful");
         
     } catch (error) {
-        res.status(400).send("Error while logging in: " + error.message);
+        res.status(400).json({
+            message: "Error while logging in: " + error.message
+        })
     }
 })
 
@@ -69,10 +76,14 @@ authRouter.post("/logout", async (req, res) => {
         res.clearCookie("token");
 
         // send the response back to user
-        res.send("Logout Successful");
-        
+        res.json({
+            message: "Logout Successful"
+        });
+
     } catch (error) {
-        res.status(400).send("Error while logging out: " + error.message);
+        res.status(400).json({
+            message: "Error while logging out: " + error.message
+        });
     }
 })
 
