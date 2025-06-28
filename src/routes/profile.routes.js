@@ -36,9 +36,14 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
         Object.keys(req.body).forEach( key => loggedInUser[key] = req.body[key])
 
         await loggedInUser.save();
-        res.status(200).send("Profile updated successfully");
+        res.status(200).json({
+            message: "Profile updated successfully",
+            data: loggedInUser
+        })
     } catch (error) {
-        res.status(400).send("Error while updating profile: " + error.message);
+        res.status(400).json({
+            message: "Error while updating profile: " + error.message
+        })
         
     }
 })
