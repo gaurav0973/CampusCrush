@@ -1,6 +1,7 @@
 import express from 'express';
 import  userAuth  from '../middleware/auth.middleware.js';
 import ConnectionRequest from '../models/connectionRequest.model.js';
+import User from '../models/user.model.js';
 
 
 const userRouter = express.Router();
@@ -69,6 +70,50 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         res.status(400).json({
             message: "Error while fetching connections: " + error.message
         })
+    }
+})
+
+
+/*
+user should see all the cards except
+1. his own card
+2. his connections
+3. ignored people
+4. already sent connection requests
+*/
+userRouter.get("/user/feed", userAuth, async (req, res) => {
+    try {
+        const loggedInUser = req.user
+
+        // get all conncetion requests (sent + recieved)
+        const conncetionRequests = await ConnectionRequest.find({
+            $or: [
+                { fromUserId: loggedInUser._id },
+                { toUserId: loggedInUser._id }
+            ]
+        }).select("fromUserId toUserId")
+
+
+        const hideUserFromFeed = new Set()
+        conncetionRequests.forEach(req => {
+            hideUserFromFeed.add(req.fromUserId.toString())
+            hideUserFromFeed.add(req.toUserId.toString())
+        })
+
+
+        const user = await User.find({
+           $and: [
+               { _id: { $nin: Array.from(hideUserFromFeed) } },
+               { _id: { $ne: loggedInUser._id } },
+               
+           ]
+        }).select(["firstName", "lastName", "photoUrl", "about", "skills"])
+        
+    } catch (error) {
+        res.status(400).json({
+            message: "Error while fetching user feed: " + error.message
+        })
+        
     }
 })
 
