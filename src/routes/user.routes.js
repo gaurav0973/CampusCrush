@@ -84,6 +84,9 @@ user should see all the cards except
 userRouter.get("/user/feed", userAuth, async (req, res) => {
     try {
         const loggedInUser = req.user
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
 
         // get all conncetion requests (sent + recieved)
         const conncetionRequests = await ConnectionRequest.find({
@@ -107,7 +110,10 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
                { _id: { $ne: loggedInUser._id } },
                
            ]
-        }).select(["firstName", "lastName", "photoUrl", "about", "skills"])
+        })
+        .select(["firstName", "lastName", "photoUrl", "about", "skills"])
+        .skip(skip)
+        .limit(limit)
         
     } catch (error) {
         res.status(400).json({
