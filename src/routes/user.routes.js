@@ -82,6 +82,7 @@ user should see all the cards except
 4. already sent connection requests
 */
 userRouter.get("/user/feed", userAuth, async (req, res) => {
+    console.log("Fetching user feed");
     try {
         const loggedInUser = req.user
         const page = parseInt(req.query.page) || 1;
@@ -114,6 +115,11 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
         .select(["firstName", "lastName", "photoUrl", "about", "skills"])
         .skip(skip)
         .limit(limit)
+
+        return res.status(200).json({
+            message: "User feed fetched successfully",
+            data: user
+        });
         
     } catch (error) {
         res.status(400).json({

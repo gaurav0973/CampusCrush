@@ -53,6 +53,7 @@ const userSchema = new mongoose.Schema({
     },
     about : {
         type : String,
+        default : "Hey there! I am using CampusCrush ",
     },
     skills : {
         type : [String],

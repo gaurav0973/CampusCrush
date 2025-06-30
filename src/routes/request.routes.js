@@ -5,8 +5,7 @@ import User from "../models/user.model.js";
 
 const requestRouter = express.Router();
 
-requestRouter.post(
-  "/request/send/:status/:toUserId",
+requestRouter.post("/request/send/:status/:toUserId",
   userAuth,
   async (req, res) => {
     try {
@@ -19,9 +18,9 @@ requestRouter.post(
       if (!allowedStatus.includes(status)) {
         return res
           .status(400)
-          .send(
-            "Invalid status. Allowed values are: " + allowedStatus.join(", ")
-          );
+          .json({
+            message: "Invalid status. Allowed values are: " + allowedStatus.join(", ")
+          })
       }
 
       // check toUserId is existing user
@@ -41,7 +40,10 @@ requestRouter.post(
         ],
       });
       if (existingRequest) {
-        return res.status(400).send("Connection request already exists");
+        return res.status(400)
+          .json({
+            message: "Connection request already exists between these users"
+          });
       }
 
       const connectionRequest = new ConnectionRequest({
@@ -52,55 +54,57 @@ requestRouter.post(
 
       const data = await connectionRequest.save();
       res.json({
-        message:
-          req.user.firstName + " is " + status + " in " + toUser.firstName,
+        message: "Connection request sent successfully",
         data: data,
       });
     } catch (error) {
-      res.status(400).send("Error while sending request: " + error.message);
+      res.status(400)
+        .json({ message: "Error while sending request: " + error.message });
     }
   }
 );
 
 requestRouter.post(
-  "/request/respond/:status/:requestId",
+  "/request/review/:status/:requestId",
   userAuth,
   async (req, res) => {
-    const loggedInUser = req.user;
-    const { status, requestId } = req.params;
     try {
-      // validate the status
+      const loggedInUser = req.user;
+      const { status, requestId } = req.params;
+
       const allowedStatus = ["accepted", "rejected"];
       if (!allowedStatus.includes(status)) {
-        return res.status(400).json({
-          message:
-            "Invalid status. Allowed values are: " + allowedStatus.join(", "),
-        });
+        return res.status(400)
+          .json({ message: "Status not allowed!" });
       }
-      // requestId = should be valid
+
       const connectionRequest = await ConnectionRequest.findOne({
         _id: requestId,
         toUserId: loggedInUser._id,
         status: "interested",
       });
+      
       if (!connectionRequest) {
-        return res.status(404).json({
-          message: "Connection request not found or already processed",
-        });
+        return res
+          .status(404)
+          .json({ message: "Connection request not found" });
       }
 
       connectionRequest.status = status;
-      await connectionRequest.save();
 
-      return res.status(200).json({
-        message: `Connection request ${status} successfully`,
-        data: connectionRequest,
-      });
-    } catch (error) {
-      return res.status(500).json({
-        message: "Error processing request",
-        error: error.message,
-      });
+      const data = await connectionRequest.save();
+
+      return res.status(200)
+        .json({
+          message: "Connection request " + status,
+          data: data,
+        })
+
+    } catch (err) {
+      res.status(400)
+        .json({
+          message: "Error while reviewing connection request: " + err.message
+        })
     }
   }
 );

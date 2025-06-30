@@ -3,8 +3,7 @@ import User from "../models/user.model.js";
 
 const userAuth = async (req, res, next) => {
   // read the token from cookies
-  const token = req.cookies.token;
-  console.log("Token received: ", token);
+  const token = req.cookies.token
 
   try {
     if (!token) {
