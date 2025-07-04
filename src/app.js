@@ -1,5 +1,6 @@
 import express from "express";  
 import dotenv from "dotenv";
+import { createServer } from "http";
 import connectDB from "./config/database.js";
 import cookieParser from "cookie-parser"
 import authRouter from "./routes/auth.routes.js";
@@ -7,6 +8,7 @@ import profileRouter from "./routes/profile.routes.js";
 import requestRouter from "./routes/request.routes.js";
 import userRouter from "./routes/user.routes.js";
 import cors from "cors";
+import { initialiseSocket } from "./utils/socket.js";
 
 dotenv.config()
 const app = express();
@@ -29,13 +31,19 @@ app.use("/", profileRouter)
 app.use("/", requestRouter)
 app.use("/", userRouter)
 
+const server = createServer(app);
+initialiseSocket(server);
+
+
+
+
 
 
 // db connection
 connectDB()
     .then(()=> {
         console.log("Database connected successfully");
-        app.listen(port, ()=>{
+        server.listen(port, ()=>{
         console.log(`Server is running on port ${port}`);
         })
     })
