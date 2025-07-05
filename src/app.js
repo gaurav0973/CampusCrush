@@ -9,6 +9,7 @@ import requestRouter from "./routes/request.routes.js";
 import userRouter from "./routes/user.routes.js";
 import cors from "cors";
 import { initialiseSocket } from "./utils/socket.js";
+import chatRouter from "./routes/chat.routes.js";
 
 dotenv.config()
 const app = express();
@@ -30,6 +31,7 @@ app.use("/", authRouter)
 app.use("/", profileRouter)
 app.use("/", requestRouter)
 app.use("/", userRouter)
+app.use("/", chatRouter)
 
 const server = createServer(app);
 initialiseSocket(server);
